@@ -1,0 +1,4461 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#070912">
+<meta name="description" content="GUESS IT! — szybka gra w zgadywanie liczb. Wybierz poziom, zgadnij liczbę i pobij swój rekord.">
+<meta name="application-name" content="GUESS IT!">
+<title>🎯 GUESS IT!</title>
+
+<style>
+/* =========================================================
+   GUESS IT!
+   PUBLIC EDITION
+   Jednoplikowa gra HTML / CSS / JavaScript
+   ========================================================= */
+
+:root {
+    --bg: #070912;
+    --bg2: #0d1220;
+    --card: rgba(17, 23, 40, .82);
+    --card2: #12192b;
+    --text: #f7f8ff;
+    --muted: #929bb7;
+    --border: rgba(255,255,255,.09);
+
+    --purple: #8b5cf6;
+    --purple2: #a78bfa;
+    --blue: #3b82f6;
+    --cyan: #22d3ee;
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --orange: #fb923c;
+    --red: #fb7185;
+    --pink: #f472b6;
+
+    --shadow: 0 25px 80px rgba(0,0,0,.38);
+}
+
+body.light {
+    --bg: #eef1ff;
+    --bg2: #f8f9ff;
+    --card: rgba(255,255,255,.84);
+    --card2: #ffffff;
+    --text: #171a2b;
+    --muted: #667085;
+    --border: rgba(0,0,0,.08);
+    --shadow: 0 25px 70px rgba(60,70,120,.16);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--text);
+    background:
+        radial-gradient(circle at 5% 5%, rgba(139,92,246,.20), transparent 27%),
+        radial-gradient(circle at 95% 20%, rgba(34,211,238,.12), transparent 28%),
+        radial-gradient(circle at 50% 105%, rgba(244,114,182,.10), transparent 30%),
+        var(--bg);
+    overflow-x: hidden;
+    transition: background .3s, color .3s;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+button {
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+input:focus-visible {
+    outline: 3px solid rgba(139,92,246,.55);
+    outline-offset: 2px;
+}
+
+/* =========================================================
+   TŁO
+   ========================================================= */
+
+.background {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.grid-bg {
+    position: absolute;
+    inset: 0;
+    opacity: .16;
+    background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+    background-size: 45px 45px;
+    mask-image: linear-gradient(to bottom, black, transparent);
+}
+
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: .17;
+    animation: floating 13s ease-in-out infinite;
+}
+
+.orb.one {
+    width: 340px;
+    height: 340px;
+    background: var(--purple);
+    top: -130px;
+    left: -100px;
+}
+
+.orb.two {
+    width: 300px;
+    height: 300px;
+    background: var(--cyan);
+    right: -100px;
+    top: 28%;
+    animation-delay: -4s;
+}
+
+.orb.three {
+    width: 330px;
+    height: 330px;
+    background: var(--pink);
+    bottom: -170px;
+    left: 38%;
+    animation-delay: -8s;
+}
+
+@keyframes floating {
+    0%,100% {
+        transform: translate(0,0) scale(1);
+    }
+
+    50% {
+        transform: translate(35px,-30px) scale(1.08);
+    }
+}
+
+/* =========================================================
+   LAYOUT
+   ========================================================= */
+
+.container {
+    width: min(1180px, calc(100% - 28px));
+    margin: auto;
+    padding: 22px 0 60px;
+}
+
+.card {
+    background: var(--card);
+    backdrop-filter: blur(22px);
+    border: 1px solid var(--border);
+    border-radius: 25px;
+    box-shadow: var(--shadow);
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    font-size: 26px;
+    background: linear-gradient(135deg,var(--purple),var(--pink));
+    box-shadow: 0 12px 35px rgba(139,92,246,.35);
+}
+
+.logo h1 {
+    font-size: 21px;
+    letter-spacing: 1px;
+}
+
+.logo small {
+    display: block;
+    color: var(--muted);
+    margin-top: 3px;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.icon-button {
+    width: 43px;
+    height: 43px;
+    border-radius: 13px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 18px;
+    transition: .2s;
+}
+
+.icon-button:hover {
+    transform: translateY(-2px);
+    border-color: var(--purple);
+}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.hero {
+    position: relative;
+    overflow: hidden;
+    padding: 48px 25px;
+    text-align: center;
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    left: 50%;
+    top: -180px;
+    transform: translateX(-50%);
+    background: var(--purple);
+    filter: blur(100px);
+    opacity: .13;
+}
+
+.hero-icon {
+    font-size: 68px;
+    animation: targetFloat 3s ease-in-out infinite;
+}
+
+@keyframes targetFloat {
+    0%,100% {
+        transform: translateY(0) rotate(-3deg);
+    }
+
+    50% {
+        transform: translateY(-9px) rotate(3deg);
+    }
+}
+
+.hero h2 {
+    font-size: clamp(35px,6vw,58px);
+    margin: 10px 0 12px;
+    background: linear-gradient(
+        90deg,
+        var(--purple2),
+        var(--cyan),
+        var(--pink)
+    );
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.hero p {
+    max-width: 680px;
+    margin: auto;
+    color: var(--muted);
+    line-height: 1.65;
+}
+
+/* =========================================================
+   SEKCJE
+   ========================================================= */
+
+.section-title {
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-size: 12px;
+    font-weight: bold;
+    margin: 24px 4px 11px;
+}
+
+/* =========================================================
+   DIFFICULTIES
+   ========================================================= */
+
+.difficulties {
+    display: grid;
+    grid-template-columns: repeat(5,1fr);
+    gap: 11px;
+}
+
+.diff {
+    position: relative;
+    overflow: hidden;
+    padding: 18px 13px;
+    text-align: left;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    border-radius: 19px;
+    cursor: pointer;
+    transition: .22s;
+}
+
+.diff::after {
+    content: "";
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    right: -50px;
+    bottom: -50px;
+    border-radius: 50%;
+    background: var(--purple);
+    filter: blur(30px);
+    opacity: 0;
+    transition: .25s;
+}
+
+.diff:hover {
+    transform: translateY(-4px);
+    border-color: rgba(139,92,246,.5);
+}
+
+.diff:hover::after,
+.diff.active::after {
+    opacity: .12;
+}
+
+.diff.active {
+    border-color: var(--purple);
+    background:
+        linear-gradient(
+            145deg,
+            rgba(139,92,246,.19),
+            rgba(34,211,238,.05)
+        );
+    box-shadow: 0 0 0 2px rgba(139,92,246,.1);
+}
+
+.diff-icon {
+    font-size: 28px;
+    margin-bottom: 9px;
+}
+
+.diff strong {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.diff small {
+    display: block;
+    color: var(--muted);
+    line-height: 1.45;
+    min-height: 32px;
+}
+
+.tag {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 5px 7px;
+    border-radius: 7px;
+    font-size: 10px;
+    background: rgba(255,255,255,.055);
+    color: var(--muted);
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.primary-button,
+.secondary-button,
+.danger-button {
+    border-radius: 14px;
+    padding: 12px 19px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: .2s;
+    min-height: 44px;
+}
+
+.primary-button {
+    border: none;
+    color: white;
+    background: linear-gradient(135deg,var(--purple),var(--blue));
+    box-shadow: 0 11px 30px rgba(124,92,246,.3);
+}
+
+.primary-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px rgba(124,92,246,.4);
+}
+
+.secondary-button {
+    color: var(--text);
+    background: var(--card);
+    border: 1px solid var(--border);
+}
+
+.secondary-button:hover {
+    border-color: var(--purple);
+    transform: translateY(-1px);
+}
+
+.danger-button {
+    color: white;
+    background: linear-gradient(135deg,#fb7185,#e11d48);
+    border: none;
+}
+
+/* =========================================================
+   START BUTTON
+   ========================================================= */
+
+.start-wrap {
+    text-align: center;
+    margin: 18px 0 0;
+}
+
+/* =========================================================
+   DAILY
+   ========================================================= */
+
+.daily-card {
+    margin-top: 12px;
+    padding: 19px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(251,191,36,.08),
+            rgba(139,92,246,.07)
+        );
+}
+
+.daily-info {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.daily-icon {
+    font-size: 31px;
+}
+
+.daily-info strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.daily-info small {
+    color: var(--muted);
+    line-height: 1.4;
+}
+
+/* =========================================================
+   GAME SCREEN
+   ========================================================= */
+
+#gameScreen {
+    display: none;
+}
+
+.top-stats {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 11px;
+    margin-bottom: 12px;
+}
+
+.stat-box {
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: var(--card);
+    border: 1px solid var(--border);
+}
+
+.stat-label {
+    color: var(--muted);
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: 900;
+    margin-top: 5px;
+}
+
+.stat-value.purple {
+    color: var(--purple2);
+}
+
+.stat-value.yellow {
+    color: var(--yellow);
+}
+
+.stat-value.green {
+    color: var(--green);
+}
+
+.stat-value.red {
+    color: var(--red);
+}
+
+/* =========================================================
+   GAME CARD
+   ========================================================= */
+
+.game-card {
+    padding: 31px;
+}
+
+.game-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 11px;
+    border-radius: 999px;
+    background: rgba(139,92,246,.12);
+    border: 1px solid rgba(139,92,246,.25);
+    color: var(--purple2);
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.range-title {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.target-area {
+    text-align: center;
+    padding: 32px 10px 18px;
+}
+
+.target-area p {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.range-number {
+    margin-top: 8px;
+    font-size: clamp(42px,8vw,76px);
+    font-weight: 900;
+    letter-spacing: -3px;
+}
+
+.range-number span {
+    background: linear-gradient(135deg,var(--text),var(--purple2));
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+/* =========================================================
+   TIMER
+   ========================================================= */
+
+.timer-area {
+    margin: 5px auto 23px;
+    max-width: 720px;
+}
+
+.timer-info {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 11px;
+    margin-bottom: 7px;
+}
+
+.timer-track {
+    height: 9px;
+    background: rgba(255,255,255,.07);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.timer-bar {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(
+        90deg,
+        var(--green),
+        var(--cyan),
+        var(--purple)
+    );
+    transition: width 1s linear, background .3s;
+}
+
+/* =========================================================
+   INPUT
+   ========================================================= */
+
+.guess-form {
+    display: flex;
+    gap: 10px;
+    max-width: 720px;
+    margin: auto;
+}
+
+.guess-input {
+    flex: 1;
+    min-width: 0;
+    padding: 16px 18px;
+    border-radius: 15px;
+    border: 2px solid var(--border);
+    background: rgba(0,0,0,.11);
+    color: var(--text);
+    font-size: 20px;
+    font-weight: bold;
+    outline: none;
+    transition: .2s;
+}
+
+body.light .guess-input {
+    background: rgba(0,0,0,.035);
+}
+
+.guess-input:focus {
+    border-color: var(--purple);
+    box-shadow: 0 0 0 4px rgba(139,92,246,.1);
+}
+
+.guess-button {
+    min-width: 135px;
+    border: none;
+    border-radius: 15px;
+    color: white;
+    background: linear-gradient(135deg,var(--purple),var(--blue));
+    font-weight: bold;
+    cursor: pointer;
+    transition: .2s;
+    min-height: 55px;
+}
+
+.guess-button:hover {
+    transform: translateY(-2px);
+}
+
+/* =========================================================
+   FEEDBACK
+   ========================================================= */
+
+.feedback {
+    min-height: 59px;
+    max-width: 720px;
+    margin: 16px auto;
+    padding: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border-radius: 15px;
+    background: rgba(255,255,255,.025);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+.feedback.hot {
+    color: var(--red);
+    background: rgba(251,113,133,.07);
+    border-color: rgba(251,113,133,.22);
+}
+
+.feedback.warm {
+    color: var(--yellow);
+    background: rgba(251,191,36,.07);
+    border-color: rgba(251,191,36,.22);
+}
+
+.feedback.cold {
+    color: var(--cyan);
+    background: rgba(34,211,238,.07);
+    border-color: rgba(34,211,238,.2);
+}
+
+.feedback.success {
+    color: var(--green);
+    background: rgba(52,211,153,.08);
+    border-color: rgba(52,211,153,.25);
+}
+
+/* =========================================================
+   LIVES
+   ========================================================= */
+
+.lives-area {
+    max-width: 720px;
+    margin: 20px auto 0;
+}
+
+.lives-head {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+.lives-label {
+    color: var(--muted);
+}
+
+.life-count {
+    color: var(--red);
+    font-weight: bold;
+}
+
+.life-bar {
+    display: flex;
+    gap: 4px;
+}
+
+.life-segment {
+    height: 9px;
+    flex: 1;
+    border-radius: 99px;
+    background: rgba(255,255,255,.06);
+    transition: .25s;
+}
+
+.life-segment.alive {
+    background: linear-gradient(90deg,#fb7185,#f43f5e);
+    box-shadow: 0 0 10px rgba(251,113,133,.2);
+}
+
+.life-segment.lost {
+    opacity: .4;
+}
+
+/* =========================================================
+   GAME ACTIONS
+   ========================================================= */
+
+.game-actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 21px;
+}
+
+/* =========================================================
+   LOWER CARDS
+   ========================================================= */
+
+.bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.info-card {
+    padding: 20px;
+}
+
+.info-card h3 {
+    font-size: 14px;
+    margin-bottom: 14px;
+}
+
+.guess-history {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.guess-chip {
+    padding: 7px 10px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,.04);
+    font-size: 12px;
+}
+
+.guess-chip.low {
+    color: var(--cyan);
+}
+
+.guess-chip.high {
+    color: var(--pink);
+}
+
+.empty {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(0,0,0,.7);
+    backdrop-filter: blur(11px);
+}
+
+.overlay.show {
+    display: flex;
+}
+
+.modal {
+    width: min(690px,100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 29px;
+    border-radius: 25px;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    box-shadow: 0 35px 110px rgba(0,0,0,.5);
+    animation: modalIn .25s ease;
+}
+
+.modal.large {
+    width: min(850px,100%);
+}
+
+@keyframes modalIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    font-size: 23px;
+}
+
+.close {
+    width: 35px;
+    height: 35px;
+    border: none;
+    border-radius: 10px;
+    background: rgba(255,255,255,.06);
+    color: var(--text);
+    cursor: pointer;
+}
+
+/* =========================================================
+   RULES
+   ========================================================= */
+
+.rules {
+    display: grid;
+    gap: 9px;
+}
+
+.rule {
+    display: flex;
+    gap: 13px;
+    padding: 13px;
+    border-radius: 14px;
+    background: rgba(255,255,255,.035);
+    border: 1px solid var(--border);
+}
+
+.rule-icon {
+    width: 29px;
+    font-size: 20px;
+    text-align: center;
+}
+
+.rule strong {
+    display: block;
+    margin-bottom: 3px;
+}
+
+.rule p {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+/* =========================================================
+   SCORING BOX
+   ========================================================= */
+
+.scoring-box {
+    margin-top: 12px;
+    padding: 16px;
+    border-radius: 15px;
+    border: 1px solid rgba(139,92,246,.25);
+    background: rgba(139,92,246,.07);
+}
+
+.scoring-box h3 {
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.score-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 6px 0;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.score-line strong {
+    color: var(--text);
+}
+
+.formula {
+    margin-top: 9px;
+    padding: 10px;
+    border-radius: 10px;
+    background: rgba(0,0,0,.14);
+    color: var(--purple2);
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+/* =========================================================
+   RESULT
+   ========================================================= */
+
+.result {
+    text-align: center;
+}
+
+.result-emoji {
+    font-size: 62px;
+    margin-bottom: 6px;
+}
+
+.result h2 {
+    font-size: 30px;
+}
+
+.result-sub {
+    color: var(--muted);
+    margin: 7px 0 10px;
+}
+
+.result-score {
+    font-size: 50px;
+    font-weight: 900;
+    color: var(--yellow);
+    margin: 8px 0 16px;
+}
+
+.result-stats {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 8px;
+}
+
+.result-stat {
+    padding: 13px 7px;
+    border-radius: 13px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--border);
+}
+
+.result-stat b {
+    display: block;
+    font-size: 17px;
+}
+
+.result-stat small {
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.breakdown {
+    margin-top: 16px;
+    text-align: left;
+    border-top: 1px solid var(--border);
+    padding-top: 13px;
+}
+
+.breakdown h3 {
+    font-size: 13px;
+    margin-bottom: 7px;
+}
+
+.breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 5px 0;
+}
+
+.breakdown-row.total {
+    color: var(--text);
+    font-weight: bold;
+    border-top: 1px solid var(--border);
+    margin-top: 5px;
+    padding-top: 9px;
+}
+
+/* =========================================================
+   ACHIEVEMENTS
+   ========================================================= */
+
+.achievement-grid {
+    display: grid;
+    grid-template-columns: repeat(2,1fr);
+    gap: 8px;
+}
+
+.achievement {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 13px;
+    background: rgba(255,255,255,.035);
+    border: 1px solid var(--border);
+}
+
+.achievement.locked {
+    opacity: .38;
+    filter: grayscale(1);
+}
+
+.achievement-icon {
+    font-size: 23px;
+}
+
+.achievement b {
+    display: block;
+    font-size: 12px;
+}
+
+.achievement small {
+    display: block;
+    color: var(--muted);
+    font-size: 10px;
+    margin-top: 2px;
+}
+
+/* =========================================================
+   STATS
+   ========================================================= */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 9px;
+}
+
+.big-stat {
+    padding: 15px;
+    border-radius: 14px;
+    background: rgba(255,255,255,.035);
+    border: 1px solid var(--border);
+}
+
+.big-stat b {
+    display: block;
+    font-size: 23px;
+}
+
+.big-stat span {
+    color: var(--muted);
+    font-size: 10px;
+}
+
+/* =========================================================
+   CUSTOM FORM
+   ========================================================= */
+
+.custom-form {
+    display: grid;
+    gap: 12px;
+}
+
+.custom-field label {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    margin-bottom: 5px;
+}
+
+.custom-field input {
+    width: 100%;
+    padding: 13px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(0,0,0,.1);
+    color: var(--text);
+    outline: none;
+}
+
+.custom-field input:focus {
+    border-color: var(--purple);
+}
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+.toast-container {
+    position: fixed;
+    right: 17px;
+    bottom: 17px;
+    z-index: 250;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.toast {
+    padding: 12px 16px;
+    border-radius: 13px;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    font-size: 12px;
+    animation: toastIn .25s ease;
+}
+
+/* =========================================================
+   CONFETTI
+   ========================================================= */
+
+.confetti {
+    position: fixed;
+    top: -20px;
+    z-index: 300;
+    pointer-events: none;
+    animation: confettiFall 3s linear forwards;
+}
+
+@keyframes confettiFall {
+    to {
+        transform: translateY(110vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+/* =========================================================
+   ANIMACJE
+   ========================================================= */
+
+.shake {
+    animation: shake .35s ease;
+}
+
+@keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-7px); }
+    75% { transform: translateX(7px); }
+}
+
+.pulse {
+    animation: pulse .35s ease;
+}
+
+@keyframes pulse {
+    50% {
+        transform: scale(1.08);
+    }
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 10px;
+    margin-top: 24px;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media(max-width:950px) {
+
+    .difficulties {
+        grid-template-columns: repeat(3,1fr);
+    }
+
+    .top-stats {
+        grid-template-columns: repeat(2,1fr);
+    }
+}
+
+@media(max-width:700px) {
+
+    .difficulties {
+        grid-template-columns: repeat(2,1fr);
+    }
+
+    .bottom-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .result-stats {
+        grid-template-columns: repeat(2,1fr);
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2,1fr);
+    }
+
+    .daily-card {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .daily-card .primary-button {
+        width: 100%;
+    }
+}
+
+@media(max-width:560px) {
+
+    .container {
+        width: calc(100% - 16px);
+        padding-top: 10px;
+    }
+
+    .hero {
+        padding: 32px 15px;
+    }
+
+    .hero h2 {
+        font-size: 36px;
+    }
+
+    .game-card {
+        padding: 20px 13px;
+    }
+
+    .guess-form {
+        flex-direction: column;
+    }
+
+    .guess-button {
+        min-height: 51px;
+    }
+
+    .game-top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .range-title {
+        display: none;
+    }
+
+    .header-buttons {
+        gap: 5px;
+    }
+
+    .icon-button {
+        width: 40px;
+        height: 40px;
+    }
+
+    .logo-icon {
+        width: 44px;
+        height: 44px;
+        font-size: 23px;
+    }
+
+    .logo h1 {
+        font-size: 18px;
+    }
+
+    .logo small {
+        font-size: 10px;
+    }
+
+    .modal {
+        padding: 20px;
+    }
+
+    .result-score {
+        font-size: 40px;
+    }
+}
+
+@media(max-width:400px) {
+
+    .difficulties {
+        grid-template-columns: 1fr;
+    }
+
+    .top-stats {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .achievement-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .daily-info {
+        align-items: flex-start;
+    }
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media(prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="background">
+    <div class="grid-bg"></div>
+    <div class="orb one"></div>
+    <div class="orb two"></div>
+    <div class="orb three"></div>
+</div>
+
+<div class="container">
+
+<header>
+
+    <div class="logo">
+
+        <div class="logo-icon">🎯</div>
+
+        <div>
+            <h1>GUESS IT!</h1>
+            <small>Gra w zgadywanie liczb</small>
+        </div>
+
+    </div>
+
+    <div class="header-buttons">
+
+        <button
+            class="icon-button"
+            onclick="openRules()"
+            title="Zasady"
+            aria-label="Otwórz zasady"
+        >📖</button>
+
+        <button
+            class="icon-button"
+            onclick="openStats()"
+            title="Statystyki"
+            aria-label="Otwórz statystyki"
+        >📊</button>
+
+        <button
+            class="icon-button"
+            onclick="toggleTheme()"
+            id="themeButton"
+            title="Motyw"
+            aria-label="Zmień motyw"
+        >🌙</button>
+
+        <button
+            class="icon-button"
+            onclick="toggleSound()"
+            id="soundButton"
+            title="Dźwięki"
+            aria-label="Włącz lub wyłącz dźwięki"
+        >🔊</button>
+
+    </div>
+
+</header>
+
+<section id="startScreen">
+
+    <div class="hero card">
+
+        <div class="hero-icon">🎯</div>
+
+        <h2>Zgadnij liczbę!</h2>
+
+        <p>
+            Komputer ukrył liczbę. Masz ograniczony czas i liczbę żyć.
+            Wykorzystuj wskazówki, kombinuj i spróbuj pobić swój rekord!
+        </p>
+
+    </div>
+
+    <div class="section-title">
+        🎮 Wybierz poziom trudności
+    </div>
+
+    <div class="difficulties">
+
+        <button class="diff active" id="diff-easy"
+            onclick="selectDifficulty('easy')">
+            <div class="diff-icon">🌱</div>
+            <strong>Łatwy</strong>
+            <small>Liczby od 1 do 10</small>
+            <span class="tag">❤️ 5 • ⏱️ 30s</span>
+        </button>
+
+        <button class="diff" id="diff-normal"
+            onclick="selectDifficulty('normal')">
+            <div class="diff-icon">⚡</div>
+            <strong>Normalny</strong>
+            <small>Liczby od 1 do 100</small>
+            <span class="tag">❤️ 7 • ⏱️ 45s</span>
+        </button>
+
+        <button class="diff" id="diff-hard"
+            onclick="selectDifficulty('hard')">
+            <div class="diff-icon">🔥</div>
+            <strong>Trudny</strong>
+            <small>Liczby od 1 do 500</small>
+            <span class="tag">❤️ 9 • ⏱️ 60s</span>
+        </button>
+
+        <button class="diff" id="diff-insane"
+            onclick="selectDifficulty('insane')">
+            <div class="diff-icon">💀</div>
+            <strong>Hardcore</strong>
+            <small>Liczby od 1 do 1000</small>
+            <span class="tag">❤️ 10 • ⏱️ 75s</span>
+        </button>
+
+        <button class="diff" id="diff-custom"
+            onclick="selectDifficulty('custom')">
+            <div class="diff-icon">⚙️</div>
+            <strong>Własny</strong>
+            <small>Ustaw własne zasady</small>
+            <span class="tag">🎨 CUSTOM</span>
+        </button>
+
+    </div>
+
+    <div class="start-wrap">
+
+        <button class="primary-button" onclick="startGame()">
+            🚀 ROZPOCZNIJ GRĘ
+        </button>
+
+    </div>
+
+    <div class="daily-card card">
+
+        <div class="daily-info">
+
+            <div class="daily-icon">📅</div>
+
+            <div>
+                <strong>Daily Challenge</strong>
+                <small id="dailyStatus">
+                    Jedna specjalna liczba na dzisiaj.
+                </small>
+            </div>
+
+        </div>
+
+        <button
+            class="primary-button"
+            onclick="startDailyChallenge()"
+        >
+            🎯 ZAGRAJ DAILY
+        </button>
+
+    </div>
+
+</section>
+
+<section id="gameScreen">
+
+    <div class="top-stats">
+
+        <div class="stat-box">
+            <div class="stat-label">🏆 Wynik</div>
+            <div class="stat-value purple" id="scoreDisplay">0</div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-label">🔥 Seria</div>
+            <div class="stat-value yellow" id="streakDisplay">0</div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-label">🎯 Próby</div>
+            <div class="stat-value green" id="attemptDisplay">0</div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-label">❤️ Życia</div>
+            <div class="stat-value red" id="smallLifeDisplay">7</div>
+        </div>
+
+    </div>
+
+    <div class="game-card card">
+
+        <div class="game-top">
+
+            <span class="badge" id="difficultyBadge">
+                🌱 ŁATWY
+            </span>
+
+            <span class="range-title" id="rangeTitle">
+                Zakres: 1–10
+            </span>
+
+        </div>
+
+        <div class="target-area">
+
+            <p>🎯 Zgadnij ukrytą liczbę</p>
+
+            <div class="range-number">
+                <span id="rangeDisplay">1 – 10</span>
+            </div>
+
+        </div>
+
+        <div class="timer-area">
+
+            <div class="timer-info">
+
+                <span>⏱️ Pozostały czas</span>
+
+                <strong id="timerText">30 s</strong>
+
+            </div>
+
+            <div class="timer-track">
+                <div class="timer-bar" id="timerBar"></div>
+            </div>
+
+        </div>
+
+        <form class="guess-form" onsubmit="makeGuess(event)">
+
+            <input
+                class="guess-input"
+                id="guessInput"
+                type="number"
+                step="1"
+                inputmode="numeric"
+                placeholder="Wpisz liczbę..."
+                autocomplete="off"
+                aria-label="Wpisz swoją liczbę"
+            >
+
+            <button class="guess-button" type="submit">
+                🎯 SPRAWDŹ
+            </button>
+
+        </form>
+
+        <div class="feedback" id="feedback" aria-live="polite">
+            Wpisz liczbę i sprawdź, jak blisko jesteś!
+        </div>
+
+        <div class="lives-area">
+
+            <div class="lives-head">
+
+                <span class="lives-label">
+                    ❤️ POZOSTAŁE ŻYCIA
+                </span>
+
+                <span class="life-count" id="lifeCount">
+                    5 / 5
+                </span>
+
+            </div>
+
+            <div class="life-bar" id="lifeBar"></div>
+
+        </div>
+
+        <div class="game-actions">
+
+            <button class="secondary-button" onclick="useHint()">
+                💡 Podpowiedź
+            </button>
+
+            <button class="secondary-button" onclick="openRules()">
+                📖 Zasady
+            </button>
+
+            <button class="secondary-button" onclick="goMenu()">
+                🏠 Menu
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="bottom-grid">
+
+        <div class="info-card card">
+
+            <h3>📜 Ostatnie próby</h3>
+
+            <div class="guess-history" id="guessHistory">
+                <span class="empty">
+                    Nie masz jeszcze żadnych prób.
+                </span>
+            </div>
+
+        </div>
+
+        <div class="info-card card">
+
+            <h3>🌡️ Temperatura</h3>
+
+            <div style="
+                color:var(--muted);
+                font-size:12px;
+                line-height:1.8;
+            ">
+
+                <div>
+                    🔥 <b style="color:var(--red)">
+                    Bardzo gorąco
+                    </b>
+                    — jesteś naprawdę blisko.
+                </div>
+
+                <div>
+                    🌡️ <b style="color:var(--yellow)">
+                    Ciepło
+                    </b>
+                    — kierunek jest dobry.
+                </div>
+
+                <div>
+                    🥶 <b style="color:var(--cyan)">
+                    Zimno
+                    </b>
+                    — jesteś daleko.
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<footer>
+    🎯 GUESS IT! • Statystyki i postęp są przechowywane lokalnie w tej przeglądarce.
+</footer>
+
+</div>
+
+<!-- =====================================================
+     RULES MODAL
+     ===================================================== -->
+
+<div class="overlay" id="rulesOverlay"
+    onclick="outsideClose(event,'rulesOverlay')">
+
+<div class="modal">
+
+    <div class="modal-header">
+
+        <h2>📖 Zasady GUESS IT!</h2>
+
+        <button class="close" onclick="closeRules()">✕</button>
+
+    </div>
+
+    <div class="rules">
+
+        <div class="rule">
+            <div class="rule-icon">🎯</div>
+            <div>
+                <strong>1. Cel gry</strong>
+                <p>
+                    Komputer losuje jedną liczbę z wybranego zakresu.
+                    Musisz ją odgadnąć, zanim skończy Ci się czas
+                    albo życia.
+                </p>
+            </div>
+        </div>
+
+        <div class="rule">
+            <div class="rule-icon">❤️</div>
+            <div>
+                <strong>2. Życia</strong>
+                <p>
+                    Każda błędna odpowiedź zabiera jedno życie.
+                    Jeśli stracisz wszystkie życia, przegrywasz.
+                </p>
+            </div>
+        </div>
+
+        <div class="rule">
+            <div class="rule-icon">⏱️</div>
+            <div>
+                <strong>3. Czas</strong>
+                <p>
+                    Każdy poziom ma własny limit czasu.
+                    Po jego upływie gra zostaje zakończona.
+                </p>
+            </div>
+        </div>
+
+        <div class="rule">
+            <div class="rule-icon">⬆️</div>
+            <div>
+                <strong>4. Wskazówki po błędzie</strong>
+                <p>
+                    Po nieudanej próbie dowiesz się, czy szukana liczba
+                    jest większa, czy mniejsza od Twojej.
+                </p>
+            </div>
+        </div>
+
+        <div class="rule">
+            <div class="rule-icon">🌡️</div>
+            <div>
+                <strong>5. Temperatura</strong>
+                <p>
+                    Gra określa odległość od prawidłowej liczby:
+                    bardzo blisko = gorąco, średnio blisko = ciepło,
+                    daleko = zimno.
+                </p>
+            </div>
+        </div>
+
+        <div class="rule">
+            <div class="rule-icon">💡</div>
+            <div>
+                <strong>6. Podpowiedź</strong>
+                <p>
+                    Raz na rundę możesz użyć podpowiedzi.
+                    Dowiesz się, w której połowie zakresu znajduje się
+                    liczba oraz czy jest parzysta czy nieparzysta.
+                    Użycie podpowiedzi zmniejsza wynik końcowy.
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="scoring-box">
+
+        <h3>🏆 Jak liczone są punkty?</h3>
+
+        <div class="score-line">
+            <span>🎯 Baza</span>
+            <strong>500 pkt</strong>
+        </div>
+
+        <div class="score-line">
+            <span>💀 Mnożnik trudności</span>
+            <strong>×1 / ×1,5 / ×2 / ×3</strong>
+        </div>
+
+        <div class="score-line">
+            <span>⚡ Bonus za czas</span>
+            <strong>+10 pkt za każdą sekundę</strong>
+        </div>
+
+        <div class="score-line">
+            <span>❤️ Bonus za życia</span>
+            <strong>+35 pkt za każde zachowane życie</strong>
+        </div>
+
+        <div class="score-line">
+            <span>🎯 Bonus za małą liczbę prób</span>
+            <strong>do +500 pkt</strong>
+        </div>
+
+        <div class="score-line">
+            <span>🔥 Bonus za serię</span>
+            <strong>+50 pkt za każde poprzednie zwycięstwo</strong>
+        </div>
+
+        <div class="score-line">
+            <span>💡 Podpowiedź</span>
+            <strong>−35% wyniku</strong>
+        </div>
+
+        <div class="formula">
+            <b>W uproszczeniu:</b><br>
+            wynik = (baza × trudność + czas + życia + próby + seria)
+            × kara za podpowiedź
+        </div>
+
+        <p style="
+            color:var(--muted);
+            font-size:10px;
+            line-height:1.5;
+            margin-top:10px;
+        ">
+            Wynik jest zaokrąglany do pełnych punktów.
+            Minimalny wynik za zwycięstwo wynosi 50 pkt.
+        </p>
+
+    </div>
+
+    <div class="rules" style="margin-top:12px;">
+
+        <div class="rule">
+            <div class="rule-icon">🔥</div>
+            <div>
+                <strong>7. Seria zwycięstw</strong>
+                <p>
+                    Jeśli wygrywasz kolejne gry, Twoja seria rośnie.
+                    Przegrana zeruje serię.
+                </p>
+            </div>
+        </div>
+
+        <div class="rule">
+            <div class="rule-icon">🏆</div>
+            <div>
+                <strong>8. Rekord</strong>
+                <p>
+                    Najwyższy wynik zostaje zapisany w przeglądarce.
+                </p>
+            </div>
+        </div>
+
+        <div class="rule">
+            <div class="rule-icon">🏅</div>
+            <div>
+                <strong>9. Osiągnięcia</strong>
+                <p>
+                    Za specjalne wyczyny możesz odblokować osiągnięcia.
+                    Sprawdź je w zakładce statystyk.
+                </p>
+            </div>
+        </div>
+
+        <div class="rule">
+            <div class="rule-icon">📅</div>
+            <div>
+                <strong>10. Daily Challenge</strong>
+                <p>
+                    Każdego dnia dostępna jest jedna specjalna liczba.
+                    Każdy gracz korzystający z tej wersji gry otrzymuje
+                    ten sam numer danego dnia.
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <div style="text-align:center;margin-top:20px;">
+
+        <button class="primary-button" onclick="closeRules()">
+            👍 ROZUMIEM
+        </button>
+
+    </div>
+
+</div>
+</div>
+
+<!-- =====================================================
+     CUSTOM MODAL
+     ===================================================== -->
+
+<div class="overlay" id="customOverlay"
+    onclick="outsideClose(event,'customOverlay')">
+
+<div class="modal">
+
+    <div class="modal-header">
+
+        <h2>⚙️ Własny poziom</h2>
+
+        <button class="close" onclick="closeCustom()">✕</button>
+
+    </div>
+
+    <div class="custom-form">
+
+        <div class="custom-field">
+
+            <label>🔢 MAKSYMALNA LICZBA</label>
+
+            <input
+                type="number"
+                id="customMax"
+                value="250"
+                min="2"
+                max="1000000"
+                step="1"
+                inputmode="numeric"
+            >
+
+        </div>
+
+        <div style="
+            color:var(--muted);
+            font-size:11px;
+            line-height:1.5;
+        ">
+            Im większy zakres, tym więcej czasu i żyć
+            otrzymasz automatycznie.
+        </div>
+
+        <div class="game-actions" style="margin-top:4px;">
+
+            <button class="primary-button" onclick="confirmCustom()">
+                🚀 USTAW TEN POZIOM
+            </button>
+
+            <button class="secondary-button" onclick="cancelCustom()">
+                ANULUJ
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+</div>
+
+<!-- =====================================================
+     RESULT MODAL
+     ===================================================== -->
+
+<div class="overlay" id="resultOverlay">
+
+<div class="modal result">
+
+    <div class="result-emoji" id="resultEmoji">🎉</div>
+
+    <h2 id="resultTitle">Wygrana!</h2>
+
+    <p class="result-sub" id="resultSub">
+        Udało Ci się!
+    </p>
+
+    <div class="result-score" id="resultScore">
+        +0 pkt
+    </div>
+
+    <div class="result-stats">
+
+        <div class="result-stat">
+            <b id="resultNumber">0</b>
+            <small>szukana liczba</small>
+        </div>
+
+        <div class="result-stat">
+            <b id="resultAttempts">0</b>
+            <small>próby</small>
+        </div>
+
+        <div class="result-stat">
+            <b id="resultLives">0 / 0</b>
+            <small>życia</small>
+        </div>
+
+        <div class="result-stat">
+            <b id="resultTime">0s</b>
+            <small>pozostało</small>
+        </div>
+
+    </div>
+
+    <div class="breakdown" id="scoreBreakdown"></div>
+
+    <div class="game-actions">
+
+        <button class="primary-button" onclick="replayGame()">
+            🔄 JESZCZE RAZ
+        </button>
+
+        <button class="secondary-button" onclick="shareResult()">
+            📤 UDOSTĘPNIJ
+        </button>
+
+        <button class="secondary-button" onclick="closeResult()">
+            🏠 MENU
+        </button>
+
+    </div>
+
+</div>
+</div>
+
+<!-- =====================================================
+     STATS MODAL
+     ===================================================== -->
+
+<div class="overlay" id="statsOverlay"
+    onclick="outsideClose(event,'statsOverlay')">
+
+<div class="modal large">
+
+    <div class="modal-header">
+
+        <h2>📊 Twoje statystyki</h2>
+
+        <button class="close" onclick="closeStats()">✕</button>
+
+    </div>
+
+    <div class="stats-grid">
+
+        <div class="big-stat">
+            <b id="statGames">0</b>
+            <span>Wszystkie gry</span>
+        </div>
+
+        <div class="big-stat">
+            <b id="statWins">0</b>
+            <span>Wygrane</span>
+        </div>
+
+        <div class="big-stat">
+            <b id="statLosses">0</b>
+            <span>Przegrane</span>
+        </div>
+
+        <div class="big-stat">
+            <b id="statWinrate">0%</b>
+            <span>Skuteczność</span>
+        </div>
+
+        <div class="big-stat">
+            <b id="statHighscore">0</b>
+            <span>Rekord</span>
+        </div>
+
+        <div class="big-stat">
+            <b id="statBestStreak">0</b>
+            <span>Najlepsza seria</span>
+        </div>
+
+        <div class="big-stat">
+            <b id="statAverage">0</b>
+            <span>Średni wynik</span>
+        </div>
+
+        <div class="big-stat">
+            <b id="statPerfect">0</b>
+            <span>Idealne trafienia</span>
+        </div>
+
+        <div class="big-stat">
+            <b id="statFast">0</b>
+            <span>Szybkie wygrane</span>
+        </div>
+
+        <div class="big-stat">
+            <b id="statDailyWins">0</b>
+            <span>Wygrane Daily</span>
+        </div>
+
+        <div class="big-stat">
+            <b id="statDailyBest">0</b>
+            <span>Najlepszy Daily wynik</span>
+        </div>
+
+        <div class="big-stat">
+            <b id="statDailyStreak">0</b>
+            <span>Seria Daily</span>
+        </div>
+
+    </div>
+
+    <div class="section-title">
+        🏅 Osiągnięcia
+    </div>
+
+    <div class="achievement-grid" id="achievementGrid"></div>
+
+    <div style="
+        margin-top:18px;
+        text-align:right;
+    ">
+
+        <button class="danger-button" onclick="resetStats()">
+            🗑️ RESETUJ STATYSTYKI
+        </button>
+
+    </div>
+
+</div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+
+/* =========================================================
+   KONFIGURACJA
+   ========================================================= */
+
+const GAME_VERSION = 2;
+
+const STORAGE_KEYS = {
+    stats: "guessStats",
+    streak: "guessStreak",
+    sound: "guessSound",
+    theme: "guessTheme",
+    hardWin: "guessHardWin",
+    custom: "guessCustom",
+    daily: "guessDaily"
+};
+
+/* =========================================================
+   DANE GRY
+   ========================================================= */
+
+const levels = {
+
+    easy: {
+        name: "ŁATWY",
+        icon: "🌱",
+        max: 10,
+        lives: 5,
+        time: 30,
+        multiplier: 1
+    },
+
+    normal: {
+        name: "NORMALNY",
+        icon: "⚡",
+        max: 100,
+        lives: 7,
+        time: 45,
+        multiplier: 1.5
+    },
+
+    hard: {
+        name: "TRUDNY",
+        icon: "🔥",
+        max: 500,
+        lives: 9,
+        time: 60,
+        multiplier: 2
+    },
+
+    insane: {
+        name: "HARDCORE",
+        icon: "💀",
+        max: 1000,
+        lives: 10,
+        time: 75,
+        multiplier: 3
+    },
+
+    custom: {
+        name: "WŁASNY",
+        icon: "⚙️",
+        max: 250,
+        lives: 7,
+        time: 45,
+        multiplier: 1
+    },
+
+    daily: {
+        name: "DAILY",
+        icon: "📅",
+        max: 1000,
+        lives: 8,
+        time: 60,
+        multiplier: 2.5
+    }
+};
+
+let difficulty = "easy";
+let gameMode = "classic";
+
+let target = 0;
+let maxNumber = 10;
+
+let lives = 5;
+let maxLives = 5;
+
+let timeLeft = 30;
+let maxTime = 30;
+
+let attempts = 0;
+let score = 0;
+
+let gameActive = false;
+let hintUsed = false;
+let timer = null;
+
+let dailyDate = "";
+let dailySeed = 0;
+let currentResultWin = false;
+
+/* =========================================================
+   BEZPIECZNE LOCALSTORAGE
+   ========================================================= */
+
+function safeGet(key, fallback = null) {
+
+    try {
+        const value = localStorage.getItem(key);
+        return value === null ? fallback : value;
+    } catch(e) {
+        return fallback;
+    }
+}
+
+function safeSet(key, value) {
+
+    try {
+        localStorage.setItem(key, value);
+        return true;
+    } catch(e) {
+        return false;
+    }
+}
+
+function safeRemove(key) {
+
+    try {
+        localStorage.removeItem(key);
+    } catch(e) {}
+}
+
+/* =========================================================
+   STATYSTYKI
+   ========================================================= */
+
+function defaultStats() {
+
+    return {
+        version: GAME_VERSION,
+        games: 0,
+        wins: 0,
+        losses: 0,
+        totalScore: 0,
+        highscore: 0,
+        bestStreak: 0,
+        perfectWins: 0,
+        fastWins: 0,
+        dailyWins: 0,
+        dailyBest: 0,
+        dailyStreak: 0,
+        dailyBestStreak: 0
+    };
+}
+
+function loadStats() {
+
+    try {
+
+        const raw = safeGet(STORAGE_KEYS.stats);
+
+        if (!raw)
+            return defaultStats();
+
+        const parsed = JSON.parse(raw);
+
+        const base = defaultStats();
+
+        return {
+            ...base,
+            ...parsed,
+            version: GAME_VERSION
+        };
+
+    } catch(e) {
+
+        return defaultStats();
+    }
+}
+
+let stats = loadStats();
+
+let streak =
+    Math.max(
+        0,
+        Number(safeGet(STORAGE_KEYS.streak, 0)) || 0
+    );
+
+let soundEnabled =
+    safeGet(STORAGE_KEYS.sound, "true") !== "false";
+
+/* =========================================================
+   ACHIEVEMENTS
+   ========================================================= */
+
+const achievements = [
+
+    {
+        id: "first",
+        icon: "🎯",
+        name: "Pierwszy strzał",
+        desc: "Wygraj pierwszą grę.",
+        check: () => stats.wins >= 1
+    },
+
+    {
+        id: "perfect",
+        icon: "🥇",
+        name: "Idealnie!",
+        desc: "Traf za pierwszą próbą.",
+        check: () => stats.perfectWins >= 1
+    },
+
+    {
+        id: "five",
+        icon: "🔥",
+        name: "Na fali",
+        desc: "Zdobądź serię 5 zwycięstw.",
+        check: () => stats.bestStreak >= 5
+    },
+
+    {
+        id: "ten",
+        icon: "👑",
+        name: "Mistrz",
+        desc: "Wygraj 10 gier.",
+        check: () => stats.wins >= 10
+    },
+
+    {
+        id: "twentyfive",
+        icon: "💎",
+        name: "Legenda",
+        desc: "Wygraj 25 gier.",
+        check: () => stats.wins >= 25
+    },
+
+    {
+        id: "points",
+        icon: "💰",
+        name: "Tysiącznik",
+        desc: "Zdobądź 1000 punktów w jednej grze.",
+        check: () => stats.highscore >= 1000
+    },
+
+    {
+        id: "fast",
+        icon: "⚡",
+        name: "Błyskawica",
+        desc: "Wygraj z 10 sekundami lub mniej.",
+        check: () => stats.fastWins >= 1
+    },
+
+    {
+        id: "hard",
+        icon: "💀",
+        name: "Nie boję się",
+        desc: "Wygraj poziom Hardcore.",
+        check: () =>
+            safeGet(STORAGE_KEYS.hardWin) === "true"
+    },
+
+    {
+        id: "rich",
+        icon: "💎",
+        name: "Bogacz",
+        desc: "Zdobądź 5000 punktów łącznie.",
+        check: () => stats.totalScore >= 5000
+    },
+
+    {
+        id: "fifty",
+        icon: "🏆",
+        name: "Pół setki",
+        desc: "Wygraj 50 gier.",
+        check: () => stats.wins >= 50
+    },
+
+    {
+        id: "daily",
+        icon: "📅",
+        name: "Codzienny gracz",
+        desc: "Wygraj Daily Challenge.",
+        check: () => stats.dailyWins >= 1
+    },
+
+    {
+        id: "dailyFive",
+        icon: "🔥",
+        name: "Daily na fali",
+        desc: "Zdobądź serię 5 Daily Challenge.",
+        check: () => stats.dailyBestStreak >= 5
+    }
+
+];
+
+/* =========================================================
+   WYBÓR POZIOMU
+   ========================================================= */
+
+function selectDifficulty(level) {
+
+    if (gameActive)
+        return;
+
+    difficulty = level;
+    gameMode = "classic";
+
+    document.querySelectorAll(".diff")
+        .forEach(button =>
+            button.classList.remove("active")
+        );
+
+    const button =
+        document.getElementById("diff-" + level);
+
+    if (button)
+        button.classList.add("active");
+
+    if (level === "custom") {
+        openCustom();
+    }
+}
+
+/* =========================================================
+   CUSTOM
+   ========================================================= */
+
+let previousDifficulty = "easy";
+
+function openCustom() {
+
+    previousDifficulty =
+        difficulty === "custom"
+            ? "easy"
+            : difficulty;
+
+    const saved =
+        Number(
+            safeGet(
+                STORAGE_KEYS.custom,
+                levels.custom.max
+            )
+        );
+
+    document.getElementById("customMax").value =
+        Number.isInteger(saved) &&
+        saved >= 2 &&
+        saved <= 1000000
+            ? saved
+            : 250;
+
+    document
+        .getElementById("customOverlay")
+        .classList.add("show");
+}
+
+function closeCustom() {
+
+    document
+        .getElementById("customOverlay")
+        .classList.remove("show");
+}
+
+function cancelCustom() {
+
+    difficulty = previousDifficulty;
+
+    document.querySelectorAll(".diff")
+        .forEach(button =>
+            button.classList.remove("active")
+        );
+
+    const previous =
+        document.getElementById(
+            "diff-" + difficulty
+        );
+
+    if (previous)
+        previous.classList.add("active");
+
+    closeCustom();
+}
+
+function confirmCustom() {
+
+    const input =
+        document.getElementById("customMax");
+
+    const max =
+        Number(input.value);
+
+    if (
+        !Number.isInteger(max) ||
+        max < 2 ||
+        max > 1000000
+    ) {
+
+        showToast(
+            "❌ Zakres musi być od 2 do 1 000 000."
+        );
+
+        input.focus();
+
+        return;
+    }
+
+    levels.custom.max = max;
+
+    levels.custom.lives =
+        Math.min(
+            12,
+            Math.max(
+                5,
+                Math.ceil(
+                    Math.log10(max + 1) * 4
+                )
+            )
+        );
+
+    levels.custom.time =
+        Math.min(
+            120,
+            Math.max(
+                30,
+                Math.ceil(
+                    Math.log2(max) * 5
+                )
+            )
+        );
+
+    safeSet(
+        STORAGE_KEYS.custom,
+        max
+    );
+
+    difficulty = "custom";
+    gameMode = "classic";
+
+    document.querySelectorAll(".diff")
+        .forEach(button =>
+            button.classList.remove("active")
+        );
+
+    document
+        .getElementById("diff-custom")
+        .classList.add("active");
+
+    closeCustom();
+
+    showToast(
+        `⚙️ Ustawiono zakres 1–${formatNumber(max)}`
+    );
+}
+
+/* =========================================================
+   DAILY CHALLENGE
+   ========================================================= */
+
+function getLocalDateKey() {
+
+    const date = new Date();
+
+    return [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2,"0"),
+        String(date.getDate()).padStart(2,"0")
+    ].join("-");
+}
+
+function stringSeed(text) {
+
+    let hash = 2166136261;
+
+    for (let i = 0; i < text.length; i++) {
+
+        hash ^= text.charCodeAt(i);
+
+        hash =
+            Math.imul(
+                hash,
+                16777619
+            );
+    }
+
+    return hash >>> 0;
+}
+
+function seededRandom(seed) {
+
+    let x = seed >>> 0;
+
+    return function() {
+
+        x += 0x6D2B79F5;
+
+        let t = x;
+
+        t =
+            Math.imul(
+                t ^ t >>> 15,
+                t | 1
+            );
+
+        t ^=
+            t +
+            Math.imul(
+                t ^ t >>> 7,
+                t | 61
+            );
+
+        return (
+            (t ^ t >>> 14) >>> 0
+        ) / 4294967296;
+    };
+}
+
+function getDailyTarget() {
+
+    const date =
+        getLocalDateKey();
+
+    const seed =
+        stringSeed(
+            "GUESS-IT-DAILY-" + date
+        );
+
+    const random =
+        seededRandom(seed);
+
+    return (
+        Math.floor(
+            random() *
+            levels.daily.max
+        ) + 1
+    );
+}
+
+function hasPlayedDailyToday() {
+
+    const raw =
+        safeGet(
+            STORAGE_KEYS.daily,
+            "null"
+        );
+
+    try {
+
+        const data =
+            JSON.parse(raw);
+
+        return (
+            data &&
+            data.date === getLocalDateKey()
+        );
+
+    } catch(e) {
+
+        return false;
+    }
+}
+
+function startDailyChallenge() {
+
+    if (gameActive)
+        return;
+
+    if (hasPlayedDailyToday()) {
+
+        showToast(
+            "📅 Dzisiejszy Daily Challenge został już rozegrany."
+        );
+
+        return;
+    }
+
+    gameMode = "daily";
+    difficulty = "daily";
+
+    startGame(true);
+}
+
+/* =========================================================
+   START
+   ========================================================= */
+
+function startGame(isDaily = false) {
+
+    if (gameActive)
+        return;
+
+    clearInterval(timer);
+    timer = null;
+
+    if (isDaily) {
+
+        difficulty = "daily";
+        gameMode = "daily";
+
+    } else {
+
+        gameMode = "classic";
+
+    }
+
+    const level =
+        levels[difficulty];
+
+    maxNumber = level.max;
+    maxLives = level.lives;
+    maxTime = level.time;
+
+    if (gameMode === "daily") {
+
+        target =
+            getDailyTarget();
+
+    } else {
+
+        target =
+            Math.floor(
+                Math.random() *
+                maxNumber
+            ) + 1;
+    }
+
+    lives = maxLives;
+    timeLeft = maxTime;
+
+    attempts = 0;
+    score = 0;
+    hintUsed = false;
+
+    gameActive = true;
+
+    document
+        .getElementById("startScreen")
+        .style.display = "none";
+
+    document
+        .getElementById("gameScreen")
+        .style.display = "block";
+
+    updateGameUI();
+
+    const input =
+        document.getElementById("guessInput");
+
+    input.min = 1;
+    input.max = maxNumber;
+    input.value = "";
+
+    input.setAttribute(
+        "aria-label",
+        `Wpisz liczbę od 1 do ${formatNumber(maxNumber)}`
+    );
+
+    document
+        .getElementById("guessHistory")
+        .innerHTML =
+        `<span class="empty">
+            Nie masz jeszcze żadnych prób.
+        </span>`;
+
+    setFeedback(
+        gameMode === "daily"
+            ? `📅 Daily Challenge! Zgadnij liczbę od 1 do ${formatNumber(maxNumber)}!`
+            : `🎯 Zgadnij liczbę od 1 do ${formatNumber(maxNumber)}!`,
+        ""
+    );
+
+    input.focus();
+
+    timer =
+        setInterval(
+            updateTimer,
+            1000
+        );
+
+    playSound("start");
+}
+
+/* =========================================================
+   TIMER
+   ========================================================= */
+
+function updateTimer() {
+
+    if (!gameActive)
+        return;
+
+    timeLeft--;
+
+    if (timeLeft < 0)
+        timeLeft = 0;
+
+    updateGameUI();
+
+    if (timeLeft <= 0) {
+
+        finishLoss(
+            "⏰",
+            "Czas minął!"
+        );
+    }
+}
+
+/* =========================================================
+   GUESS
+   ========================================================= */
+
+function makeGuess(event) {
+
+    event.preventDefault();
+
+    if (!gameActive)
+        return;
+
+    const input =
+        document.getElementById("guessInput");
+
+    const raw =
+        input.value.trim();
+
+    if (raw === "") {
+
+        setFeedback(
+            "⚠️ Wpisz liczbę.",
+            ""
+        );
+
+        shake(input);
+        return;
+    }
+
+    const guess =
+        Number(raw);
+
+    if (
+        !Number.isSafeInteger(guess) ||
+        guess < 1 ||
+        guess > maxNumber
+    ) {
+
+        setFeedback(
+            `⚠️ Wpisz liczbę całkowitą od 1 do ${formatNumber(maxNumber)}.`,
+            ""
+        );
+
+        shake(input);
+        input.focus();
+
+        return;
+    }
+
+    attempts++;
+
+    if (guess === target) {
+
+        winGame();
+
+        return;
+    }
+
+    lives--;
+
+    addGuessToHistory(guess);
+
+    const distance =
+        Math.abs(
+            target - guess
+        );
+
+    const percentage =
+        distance / maxNumber;
+
+    let message;
+    let type;
+
+    if (percentage <= .02) {
+
+        message =
+            guess < target
+                ? "🔥 MEGA GORĄCO! Szukana liczba jest trochę większa!"
+                : "🔥 MEGA GORĄCO! Szukana liczba jest trochę mniejsza!";
+
+        type = "hot";
+
+    } else if (percentage <= .07) {
+
+        message =
+            guess < target
+                ? "🌡️ Ciepło! Spróbuj trochę większej liczby."
+                : "🌡️ Ciepło! Spróbuj trochę mniejszej liczby.";
+
+        type = "warm";
+
+    } else {
+
+        message =
+            guess < target
+                ? "🥶 Zimno! Szukana liczba jest większa."
+                : "🥶 Zimno! Szukana liczba jest mniejsza.";
+
+        type = "cold";
+    }
+
+    setFeedback(
+        message,
+        type
+    );
+
+    playSound("wrong");
+
+    updateGameUI();
+
+    input.value = "";
+
+    if (lives <= 0) {
+
+        finishLoss(
+            "💀",
+            "Straciłeś wszystkie życia!"
+        );
+
+        return;
+    }
+
+    input.focus();
+}
+
+/* =========================================================
+   LOSS
+   ========================================================= */
+
+function finishLoss(emoji, title) {
+
+    if (!gameActive)
+        return;
+
+    gameActive = false;
+
+    clearInterval(timer);
+    timer = null;
+
+    stats.games++;
+    stats.losses++;
+
+    streak = 0;
+
+    if (gameMode === "daily") {
+
+        recordDailyResult(false);
+    }
+
+    saveEverything();
+
+    playSound("lose");
+
+    showResult(
+        false,
+        emoji,
+        title
+    );
+}
+
+/* =========================================================
+   WIN
+   ========================================================= */
+
+function winGame() {
+
+    if (!gameActive)
+        return;
+
+    gameActive = false;
+
+    clearInterval(timer);
+    timer = null;
+
+    const multiplier =
+        levels[difficulty].multiplier;
+
+    const base = 500;
+
+    const baseWithDifficulty =
+        Math.round(
+            base * multiplier
+        );
+
+    const timeBonus =
+        timeLeft * 10;
+
+    const lifeBonus =
+        lives * 35;
+
+    const attemptBonus =
+        Math.max(
+            0,
+            500 - attempts * 55
+        );
+
+    const streakBonus =
+        Math.min(
+            streak * 50,
+            500
+        );
+
+    const beforePenalty =
+        baseWithDifficulty +
+        timeBonus +
+        lifeBonus +
+        attemptBonus +
+        streakBonus;
+
+    const penalty =
+        hintUsed
+            ? Math.round(
+                beforePenalty * .35
+            )
+            : 0;
+
+    score =
+        Math.max(
+            50,
+            beforePenalty - penalty
+        );
+
+    stats.games++;
+    stats.wins++;
+
+    stats.totalScore += score;
+
+    if (score > stats.highscore)
+        stats.highscore = score;
+
+    if (attempts === 1)
+        stats.perfectWins++;
+
+    if (timeLeft <= 10)
+        stats.fastWins++;
+
+    streak++;
+
+    if (streak > stats.bestStreak)
+        stats.bestStreak = streak;
+
+    if (difficulty === "insane") {
+
+        safeSet(
+            STORAGE_KEYS.hardWin,
+            "true"
+        );
+    }
+
+    if (gameMode === "daily") {
+
+        recordDailyResult(true);
+    }
+
+    saveEverything();
+
+    playSound("win");
+
+    confetti();
+
+    setFeedback(
+        `🎉 TRAFIONE! Szukana liczba to ${target}!`,
+        "success"
+    );
+
+    updateGameUI();
+
+    showResult(
+        true,
+        "🎉",
+        gameMode === "daily"
+            ? "Daily ukończone!"
+            : "Brawo! Trafiłeś!"
+    );
+}
+
+/* =========================================================
+   DAILY RESULT
+   ========================================================= */
+
+function recordDailyResult(win) {
+
+    const today =
+        getLocalDateKey();
+
+    let dailyData = {
+        date: today,
+        played: true,
+        win: win,
+        score: win ? score : 0
+    };
+
+    const previousRaw =
+        safeGet(
+            STORAGE_KEYS.daily,
+            "null"
+        );
+
+    try {
+
+        const previous =
+            JSON.parse(previousRaw);
+
+        if (
+            previous &&
+            previous.date === today
+        ) {
+            return;
+        }
+
+    } catch(e) {}
+
+    if (win) {
+
+        stats.dailyWins++;
+
+        if (score > stats.dailyBest)
+            stats.dailyBest = score;
+
+        stats.dailyStreak++;
+
+        if (
+            stats.dailyStreak >
+            stats.dailyBestStreak
+        ) {
+            stats.dailyBestStreak =
+                stats.dailyStreak;
+        }
+
+    } else {
+
+        stats.dailyStreak = 0;
+    }
+
+    safeSet(
+        STORAGE_KEYS.daily,
+        JSON.stringify(dailyData)
+    );
+}
+
+/* =========================================================
+   SCORE BREAKDOWN
+   ========================================================= */
+
+function getScoreBreakdown() {
+
+    const multiplier =
+        levels[difficulty].multiplier;
+
+    const base =
+        Math.round(
+            500 * multiplier
+        );
+
+    const time =
+        timeLeft * 10;
+
+    const livesBonus =
+        lives * 35;
+
+    const attemptsBonus =
+        Math.max(
+            0,
+            500 - attempts * 55
+        );
+
+    const streakBonus =
+        Math.min(
+            Math.max(
+                0,
+                streak - 1
+            ) * 50,
+            500
+        );
+
+    const beforePenalty =
+        base +
+        time +
+        livesBonus +
+        attemptsBonus +
+        streakBonus;
+
+    const penalty =
+        hintUsed
+            ? Math.round(
+                beforePenalty * .35
+            )
+            : 0;
+
+    return {
+        base,
+        time,
+        livesBonus,
+        attemptsBonus,
+        streakBonus,
+        penalty
+    };
+}
+
+/* =========================================================
+   HINT
+   ========================================================= */
+
+function useHint() {
+
+    if (!gameActive)
+        return;
+
+    if (hintUsed) {
+
+        showToast(
+            "💡 Podpowiedź została już wykorzystana."
+        );
+
+        return;
+    }
+
+    hintUsed = true;
+
+    const half =
+        maxNumber / 2;
+
+    const halfText =
+        target <= half
+            ? "dolnej połowie"
+            : "górnej połowie";
+
+    const parity =
+        target % 2 === 0
+            ? "parzysta"
+            : "nieparzysta";
+
+    setFeedback(
+        `💡 Liczba znajduje się w ${halfText} zakresu i jest ${parity}. Wynik zostanie zmniejszony o 35%.`,
+        "warm"
+    );
+
+    showToast(
+        "💡 Podpowiedź wykorzystana!"
+    );
+
+    playSound("hint");
+}
+
+/* =========================================================
+   HISTORY
+   ========================================================= */
+
+function addGuessToHistory(guess) {
+
+    const history =
+        document.getElementById(
+            "guessHistory"
+        );
+
+    if (
+        history.querySelector(".empty")
+    ) {
+        history.innerHTML = "";
+    }
+
+    const chip =
+        document.createElement("span");
+
+    chip.className =
+        "guess-chip " +
+        (
+            guess < target
+                ? "low"
+                : "high"
+        );
+
+    chip.textContent =
+        guess < target
+            ? `⬆️ ${guess}`
+            : `⬇️ ${guess}`;
+
+    history.prepend(chip);
+
+    while (
+        history.children.length > 10
+    ) {
+        history.lastElementChild.remove();
+    }
+}
+
+/* =========================================================
+   UI
+   ========================================================= */
+
+function updateGameUI() {
+
+    document
+        .getElementById("scoreDisplay")
+        .textContent =
+        formatNumber(score);
+
+    document
+        .getElementById("streakDisplay")
+        .textContent =
+        streak;
+
+    document
+        .getElementById("attemptDisplay")
+        .textContent =
+        attempts;
+
+    document
+        .getElementById("smallLifeDisplay")
+        .textContent =
+        lives;
+
+    document
+        .getElementById("lifeCount")
+        .textContent =
+        `${lives} / ${maxLives}`;
+
+    document
+        .getElementById("timerText")
+        .textContent =
+        `${timeLeft} s`;
+
+    document
+        .getElementById("rangeDisplay")
+        .textContent =
+        `1 – ${formatNumber(maxNumber)}`;
+
+    document
+        .getElementById("rangeTitle")
+        .textContent =
+        `Zakres: 1–${formatNumber(maxNumber)}`;
+
+    const level =
+        levels[difficulty];
+
+    document
+        .getElementById("difficultyBadge")
+        .textContent =
+        `${level.icon} ${level.name}`;
+
+    const timerPercentage =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                (timeLeft / maxTime) * 100
+            )
+        );
+
+    document
+        .getElementById("timerBar")
+        .style.width =
+        timerPercentage + "%";
+
+    if (timeLeft <= 10) {
+
+        document
+            .getElementById("timerBar")
+            .style.background =
+            "linear-gradient(90deg,#fb7185,#e11d48)";
+
+    } else {
+
+        document
+            .getElementById("timerBar")
+            .style.background =
+            "linear-gradient(90deg,#34d399,#22d3ee,#8b5cf6)";
+    }
+
+    const lifeBar =
+        document.getElementById(
+            "lifeBar"
+        );
+
+    lifeBar.innerHTML = "";
+
+    for (
+        let i = 0;
+        i < maxLives;
+        i++
+    ) {
+
+        const segment =
+            document.createElement(
+                "div"
+            );
+
+        segment.className =
+            "life-segment " +
+            (
+                i < lives
+                    ? "alive"
+                    : "lost"
+            );
+
+        lifeBar.appendChild(segment);
+    }
+}
+
+/* =========================================================
+   FEEDBACK
+   ========================================================= */
+
+function setFeedback(text,type) {
+
+    const box =
+        document.getElementById(
+            "feedback"
+        );
+
+    box.className =
+        "feedback " + type;
+
+    box.textContent =
+        text;
+}
+
+/* =========================================================
+   RESULT
+   ========================================================= */
+
+function showResult(
+    win,
+    emoji,
+    title
+) {
+
+    currentResultWin = win;
+
+    document
+        .getElementById("resultEmoji")
+        .textContent =
+        emoji;
+
+    document
+        .getElementById("resultTitle")
+        .textContent =
+        title;
+
+    document
+        .getElementById("resultSub")
+        .textContent =
+        win
+            ? `Szukana liczba to ${target}.`
+            : `Szukana liczba to ${target}. Spróbuj ponownie!`;
+
+    document
+        .getElementById("resultScore")
+        .textContent =
+        win
+            ? `+${formatNumber(score)} pkt`
+            : "0 pkt";
+
+    document
+        .getElementById("resultNumber")
+        .textContent =
+        formatNumber(target);
+
+    document
+        .getElementById("resultAttempts")
+        .textContent =
+        attempts;
+
+    document
+        .getElementById("resultLives")
+        .textContent =
+        `${lives} / ${maxLives}`;
+
+    document
+        .getElementById("resultTime")
+        .textContent =
+        `${timeLeft}s`;
+
+    const breakdown =
+        document.getElementById(
+            "scoreBreakdown"
+        );
+
+    if (win) {
+
+        const b =
+            getScoreBreakdown();
+
+        breakdown.innerHTML = `
+
+            <h3>🧮 Skąd wzięły się punkty?</h3>
+
+            <div class="breakdown-row">
+                <span>🎯 Baza × trudność</span>
+                <strong>+${b.base}</strong>
+            </div>
+
+            <div class="breakdown-row">
+                <span>⚡ Bonus za czas</span>
+                <strong>+${b.time}</strong>
+            </div>
+
+            <div class="breakdown-row">
+                <span>❤️ Bonus za życia</span>
+                <strong>+${b.livesBonus}</strong>
+            </div>
+
+            <div class="breakdown-row">
+                <span>🎯 Bonus za próby</span>
+                <strong>+${b.attemptsBonus}</strong>
+            </div>
+
+            <div class="breakdown-row">
+                <span>🔥 Bonus za serię</span>
+                <strong>+${b.streakBonus}</strong>
+            </div>
+
+            ${
+                b.penalty > 0
+                ? `
+                <div class="breakdown-row">
+                    <span>💡 Kara za podpowiedź</span>
+                    <strong>−${b.penalty}</strong>
+                </div>
+                `
+                : ""
+            }
+
+            <div class="breakdown-row total">
+                <span>🏆 WYNIK KOŃCOWY</span>
+                <strong>${formatNumber(score)} pkt</strong>
+            </div>
+        `;
+
+    } else {
+
+        breakdown.innerHTML = `
+            <h3>📉 Wynik</h3>
+
+            <p style="
+                color:var(--muted);
+                font-size:12px;
+                line-height:1.5;
+            ">
+                Nie udało się ukończyć rundy.
+                Twoja seria została wyzerowana.
+                Spróbuj jeszcze raz!
+            </p>
+        `;
+    }
+
+    document
+        .getElementById("resultOverlay")
+        .classList.add("show");
+}
+
+/* =========================================================
+   SHARE
+   ========================================================= */
+
+async function shareResult() {
+
+    if (!currentResultWin) {
+
+        showToast(
+            "📤 Udostępnianie wyniku jest dostępne po wygranej."
+        );
+
+        return;
+    }
+
+    const modeText =
+        gameMode === "daily"
+            ? "📅 Daily Challenge"
+            : `🎮 ${levels[difficulty].name}`;
+
+    const text =
+`🎯 GUESS IT!
+
+${modeText}
+🎯 Próby: ${attempts}
+❤️ Życia: ${lives}/${maxLives}
+🏆 Wynik: ${formatNumber(score)} pkt
+🔥 Seria: ${streak}
+
+Zgadniesz lepiej? 😎`;
+
+    if (
+        navigator.share
+    ) {
+
+        try {
+
+            await navigator.share({
+                title: "🎯 GUESS IT!",
+                text
+            });
+
+            return;
+
+        } catch(e) {
+
+            if (
+                e &&
+                e.name === "AbortError"
+            ) {
+                return;
+            }
+        }
+    }
+
+    try {
+
+        if (
+            navigator.clipboard &&
+            window.isSecureContext
+        ) {
+
+            await navigator.clipboard.writeText(
+                text
+            );
+
+        } else {
+
+            const area =
+                document.createElement(
+                    "textarea"
+                );
+
+            area.value = text;
+            area.style.position = "fixed";
+            area.style.opacity = "0";
+
+            document.body.appendChild(area);
+
+            area.focus();
+            area.select();
+
+            document.execCommand(
+                "copy"
+            );
+
+            area.remove();
+        }
+
+        showToast(
+            "📋 Wynik skopiowany do schowka!"
+        );
+
+    } catch(e) {
+
+        showToast(
+            "❌ Nie udało się skopiować wyniku."
+        );
+    }
+}
+
+/* =========================================================
+   REPLAY / MENU
+   ========================================================= */
+
+function replayGame() {
+
+    document
+        .getElementById("resultOverlay")
+        .classList.remove("show");
+
+    if (gameMode === "daily") {
+
+        showToast(
+            "📅 Daily Challenge można ukończyć tylko raz dziennie."
+        );
+
+        goMenu();
+
+        return;
+    }
+
+    startGame();
+}
+
+function closeResult() {
+
+    document
+        .getElementById("resultOverlay")
+        .classList.remove("show");
+
+    goMenu();
+}
+
+function goMenu() {
+
+    gameActive = false;
+
+    clearInterval(timer);
+    timer = null;
+
+    closeAllOverlays();
+
+    document
+        .getElementById("gameScreen")
+        .style.display =
+        "none";
+
+    document
+        .getElementById("startScreen")
+        .style.display =
+        "block";
+
+    updateDailyStatus();
+}
+
+/* =========================================================
+   RULES
+   ========================================================= */
+
+function openRules() {
+
+    document
+        .getElementById("rulesOverlay")
+        .classList.add("show");
+}
+
+function closeRules() {
+
+    document
+        .getElementById("rulesOverlay")
+        .classList.remove("show");
+}
+
+/* =========================================================
+   STATS
+   ========================================================= */
+
+function openStats() {
+
+    updateStatsUI();
+
+    document
+        .getElementById("statsOverlay")
+        .classList.add("show");
+}
+
+function closeStats() {
+
+    document
+        .getElementById("statsOverlay")
+        .classList.remove("show");
+}
+
+function updateStatsUI() {
+
+    document.getElementById("statGames")
+        .textContent =
+        formatNumber(stats.games);
+
+    document.getElementById("statWins")
+        .textContent =
+        formatNumber(stats.wins);
+
+    document.getElementById("statLosses")
+        .textContent =
+        formatNumber(stats.losses);
+
+    const winrate =
+        stats.games > 0
+            ? Math.round(
+                stats.wins /
+                stats.games *
+                100
+            )
+            : 0;
+
+    document.getElementById("statWinrate")
+        .textContent =
+        winrate + "%";
+
+    document.getElementById("statHighscore")
+        .textContent =
+        formatNumber(stats.highscore);
+
+    document.getElementById("statBestStreak")
+        .textContent =
+        formatNumber(stats.bestStreak);
+
+    const average =
+        stats.wins > 0
+            ? Math.round(
+                stats.totalScore /
+                stats.wins
+            )
+            : 0;
+
+    document.getElementById("statAverage")
+        .textContent =
+        formatNumber(average);
+
+    document.getElementById("statPerfect")
+        .textContent =
+        formatNumber(stats.perfectWins);
+
+    document.getElementById("statFast")
+        .textContent =
+        formatNumber(stats.fastWins);
+
+    document.getElementById("statDailyWins")
+        .textContent =
+        formatNumber(stats.dailyWins);
+
+    document.getElementById("statDailyBest")
+        .textContent =
+        formatNumber(stats.dailyBest);
+
+    document.getElementById("statDailyStreak")
+        .textContent =
+        formatNumber(stats.dailyStreak);
+
+    renderAchievements();
+}
+
+function renderAchievements() {
+
+    const grid =
+        document.getElementById(
+            "achievementGrid"
+        );
+
+    grid.innerHTML = "";
+
+    achievements.forEach(a => {
+
+        const unlocked =
+            a.check();
+
+        const div =
+            document.createElement(
+                "div"
+            );
+
+        div.className =
+            "achievement " +
+            (
+                unlocked
+                    ? ""
+                    : "locked"
+            );
+
+        div.innerHTML = `
+
+            <div class="achievement-icon">
+                ${a.icon}
+            </div>
+
+            <div>
+
+                <b>
+                    ${a.name}
+                </b>
+
+                <small>
+                    ${a.desc}
+                </small>
+
+            </div>
+        `;
+
+        grid.appendChild(div);
+    });
+}
+
+function resetStats() {
+
+    const answer =
+        confirm(
+            "Na pewno chcesz usunąć wszystkie statystyki i serię?"
+        );
+
+    if (!answer)
+        return;
+
+    stats =
+        defaultStats();
+
+    streak = 0;
+
+    safeRemove(
+        STORAGE_KEYS.hardWin
+    );
+
+    safeRemove(
+        STORAGE_KEYS.daily
+    );
+
+    saveEverything();
+
+    updateStatsUI();
+    updateDailyStatus();
+
+    showToast(
+        "🗑️ Statystyki zostały wyzerowane."
+    );
+}
+
+/* =========================================================
+   THEME
+   ========================================================= */
+
+function toggleTheme() {
+
+    document.body
+        .classList
+        .toggle("light");
+
+    const light =
+        document.body
+            .classList
+            .contains("light");
+
+    safeSet(
+        STORAGE_KEYS.theme,
+        light
+            ? "light"
+            : "dark"
+    );
+
+    document
+        .getElementById("themeButton")
+        .textContent =
+        light
+            ? "☀️"
+            : "🌙";
+}
+
+if (
+    safeGet(
+        STORAGE_KEYS.theme
+    ) === "light"
+) {
+
+    document.body
+        .classList
+        .add("light");
+
+    document
+        .getElementById("themeButton")
+        .textContent =
+        "☀️";
+}
+
+/* =========================================================
+   SOUND
+   ========================================================= */
+
+document
+    .getElementById("soundButton")
+    .textContent =
+    soundEnabled
+        ? "🔊"
+        : "🔇";
+
+let audioContext = null;
+
+function getAudioContext() {
+
+    if (audioContext)
+        return audioContext;
+
+    const AudioContext =
+        window.AudioContext ||
+        window.webkitAudioContext;
+
+    if (!AudioContext)
+        return null;
+
+    audioContext =
+        new AudioContext();
+
+    return audioContext;
+}
+
+function toggleSound() {
+
+    soundEnabled =
+        !soundEnabled;
+
+    safeSet(
+        STORAGE_KEYS.sound,
+        soundEnabled
+    );
+
+    document
+        .getElementById("soundButton")
+        .textContent =
+        soundEnabled
+            ? "🔊"
+            : "🔇";
+
+    if (soundEnabled)
+        playSound("hint");
+
+    showToast(
+        soundEnabled
+            ? "🔊 Dźwięki włączone"
+            : "🔇 Dźwięki wyłączone"
+    );
+}
+
+/* =========================================================
+   SOUND ENGINE
+   ========================================================= */
+
+function playSound(type) {
+
+    if (!soundEnabled)
+        return;
+
+    try {
+
+        const ctx =
+            getAudioContext();
+
+        if (!ctx)
+            return;
+
+        if (
+            ctx.state === "suspended"
+        ) {
+            ctx.resume().catch(() => {});
+        }
+
+        const oscillator =
+            ctx.createOscillator();
+
+        const gain =
+            ctx.createGain();
+
+        oscillator.connect(gain);
+        gain.connect(ctx.destination);
+
+        const frequencies = {
+
+            start: 420,
+            wrong: 170,
+            lose: 100,
+            win: 720,
+            hint: 560
+        };
+
+        oscillator.frequency.value =
+            frequencies[type] || 400;
+
+        oscillator.type =
+            type === "win"
+                ? "triangle"
+                : "sine";
+
+        gain.gain.setValueAtTime(
+            .001,
+            ctx.currentTime
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            .10,
+            ctx.currentTime + .025
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            .001,
+            ctx.currentTime + .18
+        );
+
+        oscillator.start();
+
+        oscillator.stop(
+            ctx.currentTime + .2
+        );
+
+    } catch(e) {}
+}
+
+/* =========================================================
+   CONFETTI
+   ========================================================= */
+
+function confetti() {
+
+    const emojis = [
+        "🎉",
+        "✨",
+        "⭐",
+        "💜",
+        "💙",
+        "💚",
+        "🩷",
+        "🏆"
+    ];
+
+    const amount =
+        window.matchMedia(
+            "(prefers-reduced-motion: reduce)"
+        ).matches
+            ? 0
+            : 55;
+
+    for (
+        let i = 0;
+        i < amount;
+        i++
+    ) {
+
+        const piece =
+            document.createElement(
+                "div"
+            );
+
+        piece.className =
+            "confetti";
+
+        piece.textContent =
+            emojis[
+                Math.floor(
+                    Math.random() *
+                    emojis.length
+                )
+            ];
+
+        piece.style.left =
+            Math.random() * 100 +
+            "vw";
+
+        piece.style.fontSize =
+            (10 + Math.random() * 14) +
+            "px";
+
+        piece.style.animationDuration =
+            (2 + Math.random() * 2) +
+            "s";
+
+        document.body.appendChild(
+            piece
+        );
+
+        setTimeout(
+            () => piece.remove(),
+            4200
+        );
+    }
+}
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+function showToast(message) {
+
+    const container =
+        document.getElementById(
+            "toastContainer"
+        );
+
+    const toast =
+        document.createElement(
+            "div"
+        );
+
+    toast.className =
+        "toast";
+
+    toast.textContent =
+        message;
+
+    container.appendChild(
+        toast
+    );
+
+    setTimeout(() => {
+
+        toast.style.opacity =
+            "0";
+
+        toast.style.transform =
+            "translateX(25px)";
+
+        setTimeout(
+            () => toast.remove(),
+            250
+        );
+
+    },2300);
+}
+
+/* =========================================================
+   DAILY STATUS
+   ========================================================= */
+
+function updateDailyStatus() {
+
+    const status =
+        document.getElementById(
+            "dailyStatus"
+        );
+
+    if (!status)
+        return;
+
+    if (hasPlayedDailyToday()) {
+
+        status.textContent =
+            "Dzisiejsze Daily zostało już rozegrane. Wróć jutro!";
+
+    } else {
+
+        status.textContent =
+            "Jedna specjalna liczba na dzisiaj.";
+    }
+}
+
+/* =========================================================
+   OVERLAYS
+   ========================================================= */
+
+function closeAllOverlays() {
+
+    [
+        "rulesOverlay",
+        "customOverlay",
+        "statsOverlay",
+        "resultOverlay"
+    ].forEach(id => {
+
+        const element =
+            document.getElementById(id);
+
+        if (element)
+            element.classList.remove("show");
+    });
+}
+
+function outsideClose(event,id) {
+
+    if (
+        event.target.id === id
+    ) {
+
+        document
+            .getElementById(id)
+            .classList
+            .remove("show");
+    }
+}
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+function formatNumber(number) {
+
+    return Number(number)
+        .toLocaleString(
+            "pl-PL"
+        );
+}
+
+function shake(element) {
+
+    element.classList.remove(
+        "shake"
+    );
+
+    void element.offsetWidth;
+
+    element.classList.add(
+        "shake"
+    );
+
+    setTimeout(
+        () =>
+            element.classList.remove(
+                "shake"
+            ),
+        400
+    );
+}
+
+function saveEverything() {
+
+    safeSet(
+        STORAGE_KEYS.stats,
+        JSON.stringify(stats)
+    );
+
+    safeSet(
+        STORAGE_KEYS.streak,
+        String(streak)
+    );
+}
+
+/* =========================================================
+   KLAWISZE
+   ========================================================= */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key !== "Escape"
+        )
+            return;
+
+        closeRules();
+        closeCustom();
+        closeStats();
+
+        const result =
+            document.getElementById(
+                "resultOverlay"
+            );
+
+        if (
+            result.classList.contains(
+                "show"
+            )
+        ) {
+
+            result.classList.remove(
+                "show"
+            );
+
+            goMenu();
+        }
+    }
+);
+
+/* =========================================================
+   PRZYGOTOWANIE CUSTOM
+   ========================================================= */
+
+(function loadCustomSettings() {
+
+    const saved =
+        Number(
+            safeGet(
+                STORAGE_KEYS.custom,
+                250
+            )
+        );
+
+    if (
+        Number.isInteger(saved) &&
+        saved >= 2 &&
+        saved <= 1000000
+    ) {
+
+        levels.custom.max =
+            saved;
+
+        levels.custom.lives =
+            Math.min(
+                12,
+                Math.max(
+                    5,
+                    Math.ceil(
+                        Math.log10(
+                            saved + 1
+                        ) * 4
+                    )
+                )
+            );
+
+        levels.custom.time =
+            Math.min(
+                120,
+                Math.max(
+                    30,
+                    Math.ceil(
+                        Math.log2(
+                            saved
+                        ) * 5
+                    )
+                )
+            );
+    }
+})();
+
+/* =========================================================
+   STARTOWE UI
+   ========================================================= */
+
+updateGameUI();
+updateDailyStatus();
+
+setTimeout(
+    () => {
+
+        showToast(
+            "🎯 Wybierz poziom i rozpocznij grę!"
+        );
+
+    },
+    600
+);
+
+</script>
+
+</body>
+</html>
